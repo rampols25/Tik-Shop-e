@@ -601,15 +601,23 @@ function getDefaultData(){
 }
 
 // ── LOAD ──────────────────────────────────────────────────────────────────
-async function loadPage(){
+function loadPage(){
   let d = getDefaultData();
   try{
-    const r = await fetch('data.json');
-    if(r.ok) d = await r.json();
-  }catch(e){
-    try{const s=localStorage.getItem('tikshope_data');if(s)d=JSON.parse(s);}catch(e2){}
-  }
+    const s = localStorage.getItem('tikshope_data');
+    if(s) d = JSON.parse(s);
+  }catch(e){}
   renderPage(d);
+
+  // Also listen for changes made in admin panel (same browser, different tab)
+  window.addEventListener('storage', function(e){
+    if(e.key === 'tikshope_data'){
+      try{
+        const updated = JSON.parse(e.newValue);
+        if(updated) renderPage(updated);
+      }catch(err){}
+    }
+  });
 }
 
 function renderPage(d){
